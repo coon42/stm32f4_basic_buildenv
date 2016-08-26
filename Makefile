@@ -2,6 +2,7 @@ BINPATH=/usr/bin
 
 CC=$(BINPATH)/arm-none-eabi-gcc
 AR=$(BINPATH)/arm-none-eabi-ar
+LD=$(BINPATH)/arm-none-eabi-ld
 OBJCOPY=$(BINPATH)/arm-none-eabi-objcopy
 SIZE=$(BINPATH)/arm-none-eabi-size
 
@@ -27,6 +28,7 @@ CFLAGS  = -std=gnu99 -g -O2 -Wall -Tstm32_flash.ld
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -nostartfiles -mcpu=cortex-m4
 CFLAGS += -Iinc -Ilib -Ilib/inc
 CFLAGS += -Ilib/inc/core -Ilib/inc/stdperiph
+CFLAGS += -ffreestanding # -nostdlib # nostdlib parameter should be set!?
 
 ifeq ($(FLOAT_TYPE), hard)
 CFLAGS += -fsingle-precision-constant -Wdouble-promotion
@@ -36,10 +38,12 @@ else
 CFLAGS += -msoft-float
 endif
 
-CFLAGS += -ffreestanding # -nostdlib # nostdlib parameter should be set!?
+###################################################
 
-MAIN_SRCS  = main.c stm32f4xx_it.c system_stm32f4xx.c syscalls.c utils.c
-MAIN_SRCS += lib/startup_stm32f4xx.s # add startup file to build
+OBJDIR=obj
+BINDIR=bin
+MAIN_SRCS  = main.c stm32f4xx_it.c system_stm32f4xx.c syscalls.c utils.c \
+	lib/startup_stm32f4xx.s # add startup file to build
 
 LIB_SRCS = misc.c stm32f4xx_dma.c stm32f4xx_rcc.c stm32f4xx_adc.c \
 	stm32f4xx_exti.c stm32f4xx_rng.c stm32f4xx_can.c stm32f4xx_flash.c \
@@ -52,44 +56,42 @@ LIB_SRCS = misc.c stm32f4xx_dma.c stm32f4xx_rcc.c stm32f4xx_adc.c \
 	stm32f4xx_dbgmcu.c stm32f4xx_iwdg.c \
 	stm32f4xx_dcmi.c stm32f4xx_pwr.c
 
-PROJ_NAME=flemu
+PROJ_NAME=orgel
 OUTPATH=bin
 
 ###################################################
 
-ROOT=$(shell pwd)
-
-MAIN_OBJS = $(MAIN_SRCS:.c=.o)
-LIB_OBJS = $(LIB_SRCS:.c=.o)
+MAIN_OBJS=$(patsubst %.c,$(OBJDIR)/%.o,$(MAIN_SRCS))
+LIB_OBJS=$(patsubst %.c,$(OBJDIR)/%.o,$(LIB_SRCS))
 
 ###################################################
 
-.PHONY: proj flash
+.PHONY: proj flash clean
 
-all: libstm32f4.a proj
-	$(SIZE) $(OUTPATH)/$(PROJ_NAME).elf
+all: $(OUTPATH)/$(PROJ_NAME).elf
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $^
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+	mkdir -p $(BINDIR)
+
+$(OBJDIR)/%.o: %.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@ -L$(OBJDIR) -lstm32f4 -lm
+
+$(OBJDIR)/libstm32f4.a: $(LIB_OBJS)
+	$(AR) -r $@ $(LIB_OBJS)
+
+$(OUTPATH)/$(PROJ_NAME).elf: $(OBJDIR)/libstm32f4.a $(MAIN_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ -L. -Lobj -lstm32f4 -lm
+	$(OBJCOPY) -O ihex $(OUTPATH)/$(PROJ_NAME).elf $(OUTPATH)/$(PROJ_NAME).hex
+	$(OBJCOPY) -O binary $(OUTPATH)/$(PROJ_NAME).elf $(OUTPATH)/$(PROJ_NAME).bin
+	$(SIZE) $@
 
 flash: all
-	st-flash write bin/$(PROJ_NAME).bin 0x8000000
-
-libstm32f4.a: $(LIB_OBJS)
-	$(AR) -r $@ $(LIB_OBJS)
+	st-flash write $(BINDIR)/$(PROJ_NAME).bin 0x8000000
 
 proj: $(OUTPATH)/$(PROJ_NAME).elf
 
-$(OUTPATH)/$(PROJ_NAME).elf: $(MAIN_SRCS)
-	$(CC) $(CFLAGS) $^ -o $@ -L. -Llib -lstm32f4 -lm
-	$(OBJCOPY) -O ihex $(OUTPATH)/$(PROJ_NAME).elf $(OUTPATH)/$(PROJ_NAME).hex
-	$(OBJCOPY) -O binary $(OUTPATH)/$(PROJ_NAME).elf $(OUTPATH)/$(PROJ_NAME).bin
-
 clean:
-	rm -f *.o
-	rm -f $(OUTPATH)/$(PROJ_NAME).elf
-	rm -f $(OUTPATH)/$(PROJ_NAME).hex
-	rm -f $(OUTPATH)/$(PROJ_NAME).bin
-	rm -f *.a
-#	$(MAKE) clean -C lib # Remove this line if you don't want to clean the libs as well
+	rm -rf $(OBJDIR)
+	rm -rf $(BINDIR)
 	

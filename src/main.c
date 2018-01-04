@@ -19,9 +19,9 @@ int main(void) {
 
   for(;;) {
     GPIO_SetBits(GPIOD, GPIO_Pin_12);
-    Delay(50);
+    Delay(500);
     GPIO_ResetBits(GPIOD, GPIO_Pin_12);
-    Delay(50);
+    Delay(500);
   }
 
   return 0;

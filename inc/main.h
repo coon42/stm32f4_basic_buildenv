@@ -9,6 +9,6 @@
 #define MAIN_H_
 
 // Function prototypes
-void timing_handler();
+void timingHandler();
 
 #endif /* MAIN_H_ */

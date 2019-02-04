@@ -56,7 +56,7 @@ LIB_SRCS = misc.c stm32f4xx_dma.c stm32f4xx_rcc.c stm32f4xx_adc.c \
 	stm32f4xx_dbgmcu.c stm32f4xx_iwdg.c \
 	stm32f4xx_dcmi.c stm32f4xx_pwr.c
 
-PROJ_NAME=orgel
+PROJ_NAME=example
 OUTPATH=bin
 
 ###################################################
@@ -94,4 +94,4 @@ proj: $(OUTPATH)/$(PROJ_NAME).elf
 clean:
 	rm -rf $(OBJDIR)
 	rm -rf $(BINDIR)
-	
+

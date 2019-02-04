@@ -90,7 +90,9 @@ void delayMs(volatile uint32_t count) {
     ;
 }
 
-// Dummy function to avoid compiler error
+// TODO: Dummy function to avoid compiler error.
+// Implementation only needed for c++ functions!?
+// Find out how to avoid this dummy implementation.
 void _init() {
 
 }

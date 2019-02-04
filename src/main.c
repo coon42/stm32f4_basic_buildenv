@@ -21,7 +21,7 @@ int main(void) {
   initLed();
   initSdCard();
 
-  print("Hello world!\n");
+  myprintf("Hello world!\n");
 
   while (true) {
     GPIO_SetBits(GPIOD, GPIO_Pin_12);
@@ -95,75 +95,29 @@ static void initUart(uint32_t baudrate) {
 static void initSdCard() {
   FATFS fatFs;
 
-  // Try to mount SD card
-  // SD card is at 0:
-  print("Mounting SD card... ");
-  if (f_mount(&fatFs, "0:", 1) == FR_OK) {
-    print("success!\n"); // Mounted ok
+  myprintf("Mounting SD card... ");
+  if (f_mount(&fatFs, "", 1) == FR_OK) {
+    myprintf("success!\n");
 
     // Get total and free space on SD card:
     uint32_t free, total;
     TM_FATFS_DriveSize(&total, &free);
 
-    // hal_printf("Total: %8u kB; %5u MB; %2u GB\n\r", total, total / 1024, total / 1048576);
-    // hal_printf("Free:  %8u kB; %5u MB; %2u GB\n\r", free, free / 1024, free / 1048576);
+    myprintf("Total: %8u kB; %5u MB; %2u GB\n\r", total, total / 1024, total / 1048576);
+    myprintf("Free:  %8u kB; %5u MB; %2u GB\n\r", free, free / 1024, free / 1048576);
   }
   else
-    print("Failed! No SD-Card?\n\r");
+    myprintf("Failed! No SD-Card?\n\r");
 
-   // Unmount drive, don't forget this!
-   f_mount(0, "", 1);
-
-
-/*
-  FATFS FatFs;
-  FIL fil;
-
-  uint32_t total;
-  uint32_t free;
-
-  // Mount drive
-  if (f_mount(&FatFs, "", 1) == FR_OK) {
-    //Mounted OK, turn on RED LED
-    // TM_DISCO_LedOn(LED_RED);
-
-    // Try to open file
-    if (f_open(&fil, "1stfile.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE) == FR_OK) {
-      // File opened, turn off RED and turn on GREEN led
-   //   TM_DISCO_LedOn(LED_GREEN);
-   //   TM_DISCO_LedOff(LED_RED);
-
-      // If we put more than 0 characters (everything OK)
-      if (f_puts("First string in my file\n", &fil) > 0) {
-        if (TM_FATFS_DriveSize(&total, &free) == FR_OK) {
-          // Data for drive size are valid
-        }
-
-        // Turn on both leds
-        // TM_DISCO_LedOn(LED_GREEN | LED_RED);
-      }
-
-      // Close file, don't forget this!
-      f_close(&fil);
-    }
-
-      // Unmount drive, don't forget this!
-      f_mount(0, "", 1);
-  }
-*/
+  f_mount(0, "", 1); // Unmount drive
 }
 
-static void printChar(char c) {
+void PrintCharUsr(char c) {
   // Wait until previous transmission is finished:
   while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
     ;
 
   USART_SendData(USART1, (u8) c);
-}
-
-static void print(const char* pText) {
-  for (; *pText; ++pText)
-    printChar(*pText);
 }
 
 volatile uint32_t _timeVar1;

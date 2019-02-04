@@ -32,6 +32,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stm32f4xx.h>
+#include <stm32f4xx_conf.h> // CHECKMEL: Does not compile, when this include is missing!?
 	
 #include "diskio.h"
 #include "integer.h"

@@ -21,12 +21,12 @@ endif
 
 ###################################################
 
-vpath %.c . src src/tm src/tm/fatfs src/tm/fatfs/drivers src/tm/fatfs/option lib/src/stdperiph
+vpath %.c . src src/tm src/tm/fatfs src/tm/fatfs/drivers src/tm/fatfs/option src/mystdio lib/src/stdperiph
 vpath %.a lib
 
 CFLAGS  = -std=gnu99 -g -O2 -Wall -Tstm32_flash.ld
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -nostartfiles -mcpu=cortex-m4
-CFLAGS += -Iinc -Iinc/tm -Isrc/tm/fatfs -Isrc/tm/fatfs/drivers -Isrc/tm/fatfs/option -Ilib -Ilib/inc
+CFLAGS += -Iinc -Iinc/tm -Isrc/tm/fatfs -Isrc/tm/fatfs/drivers -Isrc/tm/fatfs/option -Isrc/mystdio -Ilib -Ilib/inc
 CFLAGS += -Ilib/inc/core -Ilib/inc/stdperiph
 CFLAGS += -ffreestanding # -nostdlib # nostdlib parameter should be set!?
 
@@ -42,8 +42,8 @@ endif
 
 OBJDIR=obj
 BINDIR=bin
-MAIN_SRCS  = main.c stm32f4xx_it.c system_stm32f4xx.c syscalls.c utils.c \
-  tm_stm32f4_fatfs.c ff.c diskio.c fatfs_sd_sdio.c \
+MAIN_SRCS  = main.c stm32f4xx_it.c system_stm32f4xx.c syscalls.c utils.c myprintf.c \
+  tm_stm32f4_fatfs.c tm_stm32f4_gpio.c ff.c diskio.c fatfs_sd_sdio.c ccsbcs.c syscall.c \
 	lib/startup_stm32f4xx.s # add startup file to build
 
 LIB_SRCS = misc.c stm32f4xx_dma.c stm32f4xx_rcc.c stm32f4xx_adc.c \

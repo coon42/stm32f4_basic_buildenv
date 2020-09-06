@@ -28,7 +28,7 @@ CFLAGS  = -std=gnu99 -g -O2 -Wall -Tstm32_flash.ld
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -nostartfiles -mcpu=cortex-m4
 CFLAGS += -Iinc -Ilib -Ilib/inc
 CFLAGS += -Ilib/inc/core -Ilib/inc/stdperiph
-CFLAGS += -ffreestanding # -nostdlib # nostdlib parameter should be set!?
+CFLAGS += -ffreestanding -specs=nosys.specs # -nostdlib # nostdlib parameter should be set!?
 
 ifeq ($(FLOAT_TYPE), hard)
 CFLAGS += -fsingle-precision-constant -Wdouble-promotion
